@@ -7,11 +7,15 @@ import 'package:qr_reader/src/features/scan_qr/domain/repositories/scan_qr_repos
 
 class MockScanQrRepository extends Mock implements ScanQrRepository {}
 
-const sendDto = QrDataDto(qr: 'qr');
+class MockQrDataDto extends Fake implements QrDataDto {}
 
 void main() {
   late ScanQrBloc scanQrBloc;
   late ScanQrRepository scanQrRepository;
+
+  setUpAll(() {
+    registerFallbackValue(MockQrDataDto());
+  });
 
   group('tests HomeBloc', () {
     setUp(() async {
@@ -32,6 +36,36 @@ void main() {
       wait: const Duration(milliseconds: 1000),
       act: (bloc) => bloc.add(InitScanQrEvent()),
       expect: () => [isA<ScanQrInitial>()],
+    );
+
+    blocTest<ScanQrBloc, ScanQrState>(
+      'event  SendScanCodeEvent'
+      'result = true => emit [SendSuccess]',
+      build: () {
+        scanQrRepository = MockScanQrRepository();
+
+        when(() => scanQrRepository.sendQr(any()))
+            .thenAnswer((_) => Future<bool>.value(true));
+        return ScanQrBloc(scanQrRepository);
+      },
+      wait: const Duration(milliseconds: 1000),
+      act: (bloc) => bloc.add(SendScanCodeEvent('qr')),
+      expect: () => [isA<ScanInProgress>(), isA<SendSuccess>()],
+    );
+
+    blocTest<ScanQrBloc, ScanQrState>(
+      'event  SendScanCodeEvent'
+      'result = false => emit [ScanQrInitial]',
+      build: () {
+        scanQrRepository = MockScanQrRepository();
+
+        when(() => scanQrRepository.sendQr(any()))
+            .thenAnswer((_) => Future<bool>.value(false));
+        return ScanQrBloc(scanQrRepository);
+      },
+      wait: const Duration(milliseconds: 1000),
+      act: (bloc) => bloc.add(SendScanCodeEvent('qr')),
+      expect: () => [isA<ScanInProgress>(), isA<ScanQrInitial>()],
     );
   });
 }
