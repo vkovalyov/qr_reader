@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -64,12 +63,14 @@ class _QrScanWidgetState extends State<QrScanWidget> {
             ),
           ),
         ),
-        Positioned(
-            bottom: MediaQuery.of(context).size.height / 4,
-            left: MediaQuery.of(context).size.width / 4,
-            child: Text(
-              widget.qrMappingDto.qrLink ?? context.localization.qrLink,
-              style: const TextStyle(color: Colors.white, fontSize: 18),
+        Positioned.fill(
+            top: MediaQuery.of(context).size.height / 2,
+            child: Align(
+              alignment: Alignment.center,
+              child: Text(
+                widget.qrMappingDto.qrLink ?? context.localization.qrLink,
+                style: const TextStyle(color: Colors.white, fontSize: 18),
+              ),
             ))
       ],
     );
