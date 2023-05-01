@@ -1,0 +1,17 @@
+name: PR - delete_branch_after_merge
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  if_merged:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete merged branch
+        uses: koj-co/delete-merged-action@master
+        with:
+          branches: "!master, !staging, !develop, !main, *"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

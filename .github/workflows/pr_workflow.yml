@@ -1,0 +1,68 @@
+name: PR - after approve action
+
+on:
+  pull_request:
+    branches: [ main ]
+
+
+jobs:
+
+  cancelPreviousWorkflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
+  lint:
+    timeout-minutes: 10
+    name: Code style
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Install Flutter
+        uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable'
+      - name: Checkout SSH
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_FOR_MODELS }}
+      - name: Get packages in a Flutter project
+        run: flutter pub get
+      - name: Run lint
+        run: dart analyze
+
+  runTests:
+    timeout-minutes: 30
+    needs: lint
+    name: Run tests and get coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SSH
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_FOR_MODELS }}
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+      - name: Run tests
+        run: flutter test --platform chrome
+
+  builAndroid:
+    timeout-minutes: 10
+    needs: runTests
+    name: check flutter build web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SSH
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_FOR_MODELS }}
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+      - run: flutter pub get
+      - run: flutter build apk --release
