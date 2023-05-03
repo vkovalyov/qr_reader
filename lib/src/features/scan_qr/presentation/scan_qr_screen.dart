@@ -33,10 +33,16 @@ class ScanQrScreen extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 
                   Navigator.of(context).pop();
+                } else if (state is SendError) {
+                  var snackBar = const SnackBar(
+                    content: Text('Ошибка при отправке qr-кода'),
+                  );
+
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
                 }
               },
               builder: (context, state) {
-                if (state is ScanQrInitial) {
+                if (state is ScanQrInitial || state is SendError) {
                   return QrScanWidget(
                     qrMappingDto: qrMappingDto,
                   );

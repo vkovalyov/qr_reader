@@ -16,12 +16,16 @@ class ScanQrBloc extends Bloc<ScanQrEvent, ScanQrState> {
 
     on<SendScanCodeEvent>((event, emit) async {
       emit(ScanInProgress());
-      final result = await scanQrRepository.sendQr(QrDataDto(qr: event.code));
+      try {
+        final result = await scanQrRepository.sendQr(QrDataDto(qr: event.code));
 
-      if (result) {
-        emit(SendSuccess());
-      } else {
-        emit(ScanQrInitial());
+        if (result) {
+          emit(SendSuccess());
+        } else {
+          emit(ScanQrInitial());
+        }
+      } catch (e) {
+        emit(SendError());
       }
     });
   }

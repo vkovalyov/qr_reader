@@ -7,3 +7,4 @@ class ScanQrInitial extends ScanQrState {}
 class ScanInProgress extends ScanQrState {}
 
 class SendSuccess extends ScanQrState {}
+class SendError extends ScanQrState {}

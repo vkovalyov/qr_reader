@@ -22,17 +22,16 @@ class QrScanWidget extends StatefulWidget {
 
 class _QrScanWidgetState extends State<QrScanWidget> {
   final GlobalKey qrKey = GlobalKey();
-  Barcode? result;
+  DateTime lastScan = DateTime.now();
   QRViewController? controller;
 
   @override
   void reassemble() {
     super.reassemble();
     if (Platform.isAndroid) {
-      controller!.pauseCamera();
-    } else if (Platform.isIOS) {
-      controller!.resumeCamera();
+      controller?.pauseCamera();
     }
+    controller?.resumeCamera();
   }
 
   @override
@@ -78,10 +77,15 @@ class _QrScanWidgetState extends State<QrScanWidget> {
 
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
+    this.controller?.resumeCamera();
     controller.scannedDataStream.listen((scanData) {
-      context
-          .read<ScanQrBloc>()
-          .add(SendScanCodeEvent(scanData.code.toString()));
+      if (DateTime.now().difference(lastScan) > const Duration(seconds: 3)) {
+        lastScan = DateTime.now();
+        context
+            .read<ScanQrBloc>()
+            .add(SendScanCodeEvent(scanData.code ?? ''));
+      }
+
     });
   }
 
